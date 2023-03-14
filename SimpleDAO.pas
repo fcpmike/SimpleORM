@@ -1,9 +1,20 @@
 unit SimpleDAO;
 
+{$IF DEFINED(FPC)}
+  {$mode delphi}{$H+}
+{$ENDIF}
+ 
 interface
 
 uses
     SimpleInterface,
+    SimpleDAOSQLAttribute,
+{$IF DEFINED(FPC)}
+	Classes, DB, fgl
+{$ELSE}
+    {$IFNDEF CONSOLE}
+    Forms,
+    {$ENDIF}
     System.RTTI,
     System.Generics.Collections,
     System.Classes,
@@ -15,75 +26,105 @@ uses
     Vcl.Forms,
 {$ENDIF}
 {$ENDIF}
-    SimpleDAOSQLAttribute,
-    System.Threading;
+    System.Threading
+{$ENDIF}
+	;
 
 Type
     TSimpleDAO<T: class, constructor> = class(TInterfacedObject, iSimpleDAO<T>)
     private
-        FQuery: iSimpleQuery;
-        FDataSource: TDataSource;
-        FSQLAttribute: iSimpleDAOSQLAttribute<T>;
-{$IFNDEF CONSOLE}
+      FQuery: iSimpleQuery;
+      FDataSource: TDataSource;
+      FSQLAttribute: iSimpleDAOSQLAttribute<T>;
+    {$IF DEFINED(FPC)}
+      FList: TFPGObjectList<T>;
+    {$ELSE}
+      {$IFNDEF CONSOLE}
         FForm: TForm;
-{$ENDIF}
-        FList: TObjectList<T>;
-        function FillParameter(aInstance: T): iSimpleDAO<T>; overload;
-        function FillParameter(aInstance: T; aId: Variant)
+      {$ENDIF}
+      FList: TObjectList<T>;
+    {$ENDIF}
+      function FillParameter(aInstance: T): iSimpleDAO<T>; overload;
+      function FillParameter(aInstance: T; aId: Variant)
           : iSimpleDAO<T>; overload;
-        procedure OnDataChange(Sender: TObject; Field: TField);
+      procedure OnDataChange(Sender: TObject; Field: TField);
     public
-        constructor Create(aQuery: iSimpleQuery);
-        destructor Destroy; override;
-        class function New(aQuery: iSimpleQuery): iSimpleDAO<T>; overload;
-        function DataSource(aDataSource: TDataSource): iSimpleDAO<T>;
-        function Insert(aValue: T): iSimpleDAO<T>; overload;
-        function Update(aValue: T): iSimpleDAO<T>; overload;
-        function Delete(aValue: T): iSimpleDAO<T>; overload;
-        function Delete(aField: String; aValue: String): iSimpleDAO<T>;
-          overload;
-        function LastID: iSimpleDAO<T>;
-        function LastRecord: iSimpleDAO<T>;
-{$IFNDEF CONSOLE}
+      constructor Create(aQuery: iSimpleQuery);
+      destructor Destroy; override;
+      class function New(aQuery: iSimpleQuery): iSimpleDAO<T>; overload;
+      function DataSource(aDataSource: TDataSource): iSimpleDAO<T>;
+      function Insert(aValue: T): iSimpleDAO<T>; overload;
+      function Update(aValue: T): iSimpleDAO<T>; overload;
+      function Delete(aValue: T): iSimpleDAO<T>; overload;
+      function Delete(aField: String; aValue: String): iSimpleDAO<T>;
+           overload;
+      function LastID: iSimpleDAO<T>;
+      function LastRecord: iSimpleDAO<T>;
+    {$IFNDEF FPC}
+      {$IFNDEF CONSOLE}
         function Insert: iSimpleDAO<T>; overload;
         function Update: iSimpleDAO<T>; overload;
         function Delete: iSimpleDAO<T>; overload;
-{$ENDIF}
+      {$ENDIF}
+    {$ENDIF}
         function Find(aBindList: Boolean = True): iSimpleDAO<T>; overload;
+	{$IF DEFINED(FPC)}
+		function Find(var aList: TFPGObjectList<T>): iSimpleDAO<T>; overload;
+	{$ELSE}
         function Find(var aList: TObjectList<T>): iSimpleDAO<T>; overload;
+	{$ENDIF}
         function Find(aId: Integer): T; overload;
         function Find(aKey: String; aValue: Variant): iSimpleDAO<T>; overload;
+      {$IF DEFINED(FPC)}
+        {TODO -ofcpmike -cSimpleORM.FPC: Erro na function SQL : iSimpleDAOSQLAttribute<T>; Error: Internal error 2012101001}
+        function Fields (aSQL : String) : iSimpleDAO<T>;
+        function Where (aSQL : String) : iSimpleDAO<T>;
+        function OrderBy (aSQL : String) : iSimpleDAO<T>;
+        function GroupBy (aSQL : String) : iSimpleDAO<T>;
+        function Join (aSQL : String) : iSimpleDAO<T>;
+      {$ELSE}
         function SQL: iSimpleDAOSQLAttribute<T>;
-{$IFNDEF CONSOLE}
+        {$IFNDEF CONSOLE}
         function BindForm(aForm: TForm): iSimpleDAO<T>;
-{$ENDIF}
+        {$ENDIF}
+      {$ENDIF}
     end;
 
 implementation
 
 uses
+{$IF DEFINED(FPC)}
+  SysUtils, TypInfo,
+  SimpleRTTI.FPC,
+  SimpleAttributes.FPC,
+{$ELSE}
     System.SysUtils,
     SimpleAttributes,
     System.TypInfo,
     SimpleRTTI,
+{$ENDIF}
     SimpleSQL,
-    Variants;
-{ TGenericDAO }
-{$IFNDEF CONSOLE}
+    Variants
+	;
 
+{$IFNDEF FPC}
+{$IFNDEF CONSOLE}
 function TSimpleDAO<T>.BindForm(aForm: TForm): iSimpleDAO<T>;
 begin
     Result := Self;
     FForm := aForm;
 end;
-
 {$ENDIF}
-
+{$ENDIF}
 constructor TSimpleDAO<T>.Create(aQuery: iSimpleQuery);
 begin
     FQuery := aQuery;
     FSQLAttribute := TSimpleDAOSQLAttribute<T>.New(Self);
+{$IF DEFINED(FPC)}
+	FList := TFPGObjectList<T>.Create;
+{$ELSE}
     FList := TObjectList<T>.Create;
+{$ENDIF}
 end;
 
 function TSimpleDAO<T>.DataSource(aDataSource: TDataSource): iSimpleDAO<T>;
@@ -105,6 +146,7 @@ begin
     Self.FillParameter(aValue);
     FQuery.ExecSQL;
 end;
+{$IFNDEF FPC}
 {$IFNDEF CONSOLE}
 
 function TSimpleDAO<T>.Delete: iSimpleDAO<T>;
@@ -126,7 +168,7 @@ begin
     end;
 end;
 {$ENDIF}
-
+{$ENDIF}
 function TSimpleDAO<T>.Delete(aField, aValue: String): iSimpleDAO<T>;
 var
     aSQL: String;
@@ -182,8 +224,8 @@ begin
     FQuery.Open;
     TSimpleRTTI<T>.New(nil).DataSetToEntity(FQuery.DataSet, Result);
 end;
+{$IFNDEF FPC}
 {$IFNDEF CONSOLE}
-
 function TSimpleDAO<T>.Insert: iSimpleDAO<T>;
 var
     aSQL: String;
@@ -202,7 +244,7 @@ begin
         FreeAndNil(Entity);
     end;
 end;
-
+{$ENDIF}
 {$ENDIF}
 
 function TSimpleDAO<T>.LastID: iSimpleDAO<T>;
@@ -223,7 +265,11 @@ begin
     FQuery.Open(aSQL);
 end;
 
+{$IF DEFINED(FPC)}
+function TSimpleDAO<T>.Find(var aList: TFPGObjectList<T>): iSimpleDAO<T>;
+{$ELSE}
 function TSimpleDAO<T>.Find(var aList: TObjectList<T>): iSimpleDAO<T>;
+{$ENDIF}
 var
     aSQL: String;
 begin
@@ -257,20 +303,54 @@ procedure TSimpleDAO<T>.OnDataChange(Sender: TObject; Field: TField);
 begin
     if (FList.Count > 0) and (FDataSource.DataSet.RecNo - 1 <= FList.Count) then
     begin
-{$IFNDEF CONSOLE}
+{$IFNDEF FPC}
+  {$IFNDEF CONSOLE}
         if Assigned(FForm) then
             TSimpleRTTI<T>.New(nil).BindClassToForm(FForm,
               FList[FDataSource.DataSet.RecNo - 1]);
+  {$ENDIF}
 {$ENDIF}
     end;
 end;
 
+{$IF DEFINED(FPC)}
+{TODO -ofcpmike -cSimpleORM.FPC: Erro na function SQL : iSimpleDAOSQLAttribute<T>; Error: Internal error 2012101001}
+function TSimpleDAO<T>.Fields(aSQL: String): iSimpleDAO<T>;
+begin
+  Result := Self;
+  FSQLAttribute.Fields(aSQL);
+end;
+
+function TSimpleDAO<T>.Where(aSQL: String): iSimpleDAO<T>;
+begin
+  Result := Self;
+  FSQLAttribute.Where(aSQL);
+end;
+
+function TSimpleDAO<T>.OrderBy(aSQL: String): iSimpleDAO<T>;
+begin
+ Result := Self;
+ FSQLAttribute.OrderBy(aSQL);
+end;
+
+function TSimpleDAO<T>.GroupBy(aSQL: String): iSimpleDAO<T>;
+begin
+ Result := Self;
+ FSQLAttribute.GroupBy(aSQL);
+end;
+
+function TSimpleDAO<T>.Join(aSQL: String): iSimpleDAO<T>;
+begin
+ Result := Self;
+ FSQLAttribute.Join(aSQL);
+end;
+{$ELSE}
 function TSimpleDAO<T>.SQL: iSimpleDAOSQLAttribute<T>;
 begin
     Result := FSQLAttribute;
 end;
-{$IFNDEF CONSOLE}
 
+{$IFNDEF CONSOLE}
 function TSimpleDAO<T>.Update: iSimpleDAO<T>;
 var
     aSQL: String;
@@ -290,7 +370,7 @@ begin
     end;
 end;
 {$ENDIF}
-
+{$ENDIF}
 function TSimpleDAO<T>.Update(aValue: T): iSimpleDAO<T>;
 var
     aSQL: String;
@@ -305,6 +385,43 @@ begin
     FQuery.ExecSQL;
 end;
 
+{$IF DEFINED(FPC)}
+function TSimpleDAO<T>.FillParameter(aInstance: T): iSimpleDAO<T>;
+var
+  vDictFields: TDictFields;
+  vCount: Integer;
+begin
+  vDictFields := TDictFields.Create;
+  TSimpleRTTI<T>.New(aInstance).DictionaryFields(vDictFields);
+  try
+    for vCount := 0 to Pred(vDictFields.Count) do
+    begin
+      if FQuery.Params.FindParam(vDictFields.Keys[vCount]) <> nil then
+        FQuery.Params.ParamByName(vDictFields.Keys[vCount]).Value := vDictFields.Data[vCount];
+    end;
+  finally
+    FreeAndNil(vDictFields);
+  end;
+end;
+
+function TSimpleDAO<T>.FillParameter(aInstance: T; aId: Variant): iSimpleDAO<T>;
+var
+  vCount: Integer;
+  vFields: TFPGList<String>;
+begin
+  vFields := TFPGList<String>.Create;
+  TSimpleRTTI<T>.New(aInstance).ListFields(vFields);
+  try
+    for vCount := 0 to Pred(vFields.Count) do
+    begin
+        if FQuery.Params.FindParam(vFields[vCount]) <> nil then
+            FQuery.Params.ParamByName(vFields[vCount]).Value := aId;
+    end;
+  finally
+    FreeAndNil(vFields);
+  end;
+end;
+{$ELSE}
 function TSimpleDAO<T>.FillParameter(aInstance: T): iSimpleDAO<T>;
 var
     Key: String;
@@ -350,6 +467,7 @@ begin
         FreeAndNil(ListFields);
     end;
 end;
+{$ENDIF}
 
 function TSimpleDAO<T>.Find(aKey: String; aValue: Variant): iSimpleDAO<T>;
 var

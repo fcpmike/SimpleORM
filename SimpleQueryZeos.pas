@@ -1,10 +1,19 @@
 Unit SimpleQueryZeos;
 
+{$IF DEFINED(FPC)}
+  {$mode delphi}{$H+}
+{$ENDIF}
+
 interface
 
 uses
+{$IF DEFINED(FPC)}
+	Classes, DB,
+{$ELSE}
+	System.Classes, Data.DB,
+{$ENDIF}
   SimpleInterface,  ZAbstractConnection, ZConnection,
-  ZAbstractRODataset, ZAbstractDataset, ZAbstractTable, ZDataset, System.Classes, Data.DB;
+  ZAbstractRODataset, ZAbstractDataset, ZAbstractTable, ZDataset;
 
 Type
   TSimpleQueryZeos = class(TInterfacedObject, iSimpleQuery)
@@ -27,7 +36,12 @@ Type
 implementation
 
 uses
-  System.SysUtils;
+{$IF DEFINED(FPC)}
+	SysUtils
+{$ELSE}
+  System.SysUtils
+ {$ENDIF}
+  ;
 
 { TSimpleQuery<T> }
 

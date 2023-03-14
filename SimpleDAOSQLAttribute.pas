@@ -1,5 +1,9 @@
 unit SimpleDAOSQLAttribute;
 
+{$IF DEFINED(FPC)}
+  {$mode delphi}{$H+}
+{$ENDIF}
+
 interface
 
 uses
@@ -9,8 +13,12 @@ Type
     TSimpleDAOSQLAttribute<T: class> = class(TInterfacedObject,
       iSimpleDAOSQLAttribute<T>)
     private
+    {$IF DEFINED(FPC)}
+      FParent: iSimpleDAO<T>;
+    {$ELSE}
         [weak]
         FParent: iSimpleDAO<T>;
+    {$ENDIF}
         FFields: String;
         FWhere: String;
         FOrderBy: String;
@@ -37,7 +45,12 @@ Type
 implementation
 
 uses
-    System.SysUtils;
+{$IF DEFINED(FPC)}
+  SysUtils
+{$ELSE}
+    System.SysUtils
+{$ENDIF}
+    ;
 
 { TSimpleDAOSQLAttribute<T> }
 function TSimpleDAOSQLAttribute<T>.&End: iSimpleDAO<T>;
@@ -88,7 +101,11 @@ end;
 
 constructor TSimpleDAOSQLAttribute<T>.Create(Parent: iSimpleDAO<T>);
 begin
+{$IF DEFINED(FPC)}
+  PPointer(@FParent)^ := Pointer(Parent);
+{$ELSE}
     FParent := Parent;
+{$ENDIF}
 end;
 
 destructor TSimpleDAOSQLAttribute<T>.Destroy;

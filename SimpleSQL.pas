@@ -1,7 +1,14 @@
 unit SimpleSQL;
+
+{$IF DEFINED(FPC)}
+  {$mode delphi}{$H+}
+{$ENDIF}
+
 interface
+
 uses
   SimpleInterface;
+
 Type
   TSimpleSQL<T : class, constructor> = class(TInterfacedObject, iSimpleSQL<T>)
     private
@@ -31,7 +38,13 @@ Type
 implementation
 
 uses
-  SimpleRTTI, System.Generics.Collections, System.SysUtils;
+{$IF DEFINED(FPC)}
+  SimpleRTTI.FPC, SysUtils
+{$ELSE}
+  SimpleRTTI, System.Generics.Collections, System.SysUtils
+{$ENDIF}
+  ;
+
 { TSimpleSQL<T> }
 
 constructor TSimpleSQL<T>.Create(aInstance : T);

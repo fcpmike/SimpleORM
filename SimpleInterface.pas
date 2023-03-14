@@ -1,8 +1,15 @@
 unit SimpleInterface;
 
+{$IF DEFINED(FPC)}
+  {$mode delphi}{$H+}
+{$ENDIF}
+
 interface
 
 uses
+{$IF DEFINED(FPC)}
+  Classes, DB, fgl, Forms
+{$ELSE}
   System.Classes,
   System.Generics.Collections,
   Data.DB,
@@ -14,17 +21,24 @@ uses
       Vcl.Forms,
     {$ENDIF}
   {$ENDIF}
-  System.SysUtils;
+  System.SysUtils
+ {$ENDIF}
+  ;
 type
+{$IFNDEF FPC}
+  {TODO -ofcpmike -cSimpleORM.FPC: Erro na function SQL : iSimpleDAOSQLAttribute<T>; Error: Internal error 2012101001}
   iSimpleDAOSQLAttribute<T : class> = interface;
+{$ENDIF}
 
   iSimpleDAO<T : class> = interface
     ['{19261B52-6122-4C41-9DDE-D3A1247CC461}']
+  {$IFNDEF FPC}
     {$IFNDEF CONSOLE}
     function Insert: iSimpleDAO<T>; overload;
     function Update : iSimpleDAO<T>; overload;
     function Delete : iSimpleDAO<T>; overload;
     {$ENDIF}
+  {$ENDIF}
     function Insert(aValue : T) : iSimpleDAO<T>; overload;
     function Update(aValue : T) : iSimpleDAO<T>; overload;
     function Delete(aValue : T) : iSimpleDAO<T>; overload;
@@ -33,13 +47,26 @@ type
     function Delete(aField : String; aValue : String) : iSimpleDAO<T>; overload;
     function DataSource( aDataSource : TDataSource) : iSimpleDAO<T>;
     function Find(aBindList : Boolean = True) : iSimpleDAO<T>; overload;
+  {$IF DEFINED(FPC)}
+    function Find(var aList : TFPGObjectList<T>) : iSimpleDAO<T> ; overload;
+  {$ELSE}
     function Find(var aList : TObjectList<T>) : iSimpleDAO<T> ; overload;
+  {$ENDIF}
     function Find(aId : Integer) : T; overload;
     function Find(aKey : String; aValue : Variant) : iSimpleDAO<T>; overload;
+  {$IF DEFINED(FPC)}
+    {TODO -ofcpmike -cSimpleORM.FPC: Erro na function SQL : iSimpleDAOSQLAttribute<T>; Error: Internal error 2012101001}
+    function Fields (aSQL : String) : iSimpleDAO<T>;
+    function Where (aSQL : String) : iSimpleDAO<T>;
+    function OrderBy (aSQL : String) : iSimpleDAO<T>;
+    function GroupBy (aSQL : String) : iSimpleDAO<T>;
+    function Join (aSQL : String) : iSimpleDAO<T>;
+  {$ELSE}
     function SQL : iSimpleDAOSQLAttribute<T>;
     {$IFNDEF CONSOLE}
     function BindForm(aForm : TForm)  : iSimpleDAO<T>;
     {$ENDIF}
+  {$ENDIF}
   end;
 
   iSimpleDAOSQLAttribute<T : class> = interface
@@ -61,22 +88,31 @@ type
   iSimpleRTTI<T : class> = interface
     ['{EEC49F47-24AC-4D82-9BEE-C259330A8993}']
     function TableName(var aTableName: String): ISimpleRTTI<T>;
+  {$IF DEFINED(FPC)}
+    function DictionaryFields(var aDictionary : TFPGMap<string, variant>) : iSimpleRTTI<T>;
+    function ListFields (var List : TFPGList<String>) : iSimpleRTTI<T>;
+  {$ELSE}
     function ClassName (var aClassName : String) : iSimpleRTTI<T>;
     function DictionaryFields(var aDictionary : TDictionary<string, variant>) : iSimpleRTTI<T>;
     function DictionaryTypeFields(var aDictionary: TDictionary<string, TFieldType>): iSimpleRTTI<T>;
     function ListFields (var List : TList<String>) : iSimpleRTTI<T>;
+  {$ENDIF}
     function Update (var aUpdate : String) : iSimpleRTTI<T>;
     function Where (var aWhere : String) : iSimpleRTTI<T>;
     function Fields (var aFields : String) : iSimpleRTTI<T>;
     function FieldsInsert (var aFields : String) : iSimpleRTTI<T>;
     function Param (var aParam : String) : iSimpleRTTI<T>;
-    function DataSetToEntityList (aDataSet : TDataSet; var aList : TObjectList<T>) : iSimpleRTTI<T>;
     function DataSetToEntity (aDataSet : TDataSet; var aEntity : T) : iSimpleRTTI<T>;
     function PrimaryKey(var aPK : String) : iSimpleRTTI<T>;
+  {$IF DEFINED(FPC)}
+    function DataSetToEntityList (aDataSet : TDataSet; var aList : TFPGObjectList<T>) : iSimpleRTTI<T>;
+  {$ELSE}
+    function DataSetToEntityList (aDataSet : TDataSet; var aList : TObjectList<T>) : iSimpleRTTI<T>;
     {$IFNDEF CONSOLE}
     function BindClassToForm (aForm : TForm;  const aEntity : T) : iSimpleRTTI<T>;
     function BindFormToClass (aForm : TForm; var aEntity : T) : iSimpleRTTI<T>;
     {$ENDIF}
+  {$ENDIF}
   end;
 
   iSimpleSQL<T> = interface
