@@ -1,0 +1,171 @@
+object Form1: TForm1
+  Left = 323
+  Height = 367
+  Top = 192
+  Width = 669
+  Caption = 'Lazarus SimpleORM'
+  ClientHeight = 367
+  ClientWidth = 669
+  OnCreate = FormCreate
+  OnShow = FormShow
+  LCLVersion = '2.2.3.0'
+  object DBGrid1: TDBGrid
+    Left = 0
+    Height = 187
+    Top = 180
+    Width = 669
+    Align = alClient
+    Color = clWindow
+    Columns = <>
+    DataSource = DataSource1
+    TabOrder = 0
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 180
+    Top = 0
+    Width = 669
+    Align = alTop
+    ClientHeight = 180
+    ClientWidth = 669
+    TabOrder = 1
+    object Edit1: TEdit
+      Left = 10
+      Height = 23
+      Top = 32
+      Width = 80
+      TabOrder = 0
+    end
+    object Edit2: TEdit
+      Left = 112
+      Height = 23
+      Top = 32
+      Width = 536
+      CharCase = ecUppercase
+      TabOrder = 1
+    end
+    object Label1: TLabel
+      Left = 10
+      Height = 15
+      Top = 10
+      Width = 14
+      Caption = 'ID:'
+      ParentColor = False
+    end
+    object Label2: TLabel
+      Left = 112
+      Height = 15
+      Top = 10
+      Width = 40
+      Caption = 'Cliente:'
+      ParentColor = False
+    end
+    object Label3: TLabel
+      Left = 10
+      Height = 15
+      Top = 63
+      Width = 27
+      Caption = 'Data:'
+      ParentColor = False
+    end
+    object DateEdit1: TDateEdit
+      Left = 10
+      Height = 23
+      Top = 87
+      Width = 143
+      CalendarDisplaySettings = [dsShowHeadings, dsShowDayNames]
+      DateOrder = doNone
+      ButtonWidth = 23
+      NumGlyphs = 1
+      MaxLength = 0
+      TabOrder = 2
+      Text = 'DateEdit1'
+    end
+    object CalcEdit1: TCalcEdit
+      Left = 168
+      Height = 23
+      Top = 87
+      Width = 136
+      CalculatorLayout = clNormal
+      AsInteger = 0
+      ButtonWidth = 23
+      DialogTop = 0
+      DialogLeft = 0
+      NumGlyphs = 1
+      MaxLength = 0
+      TabOrder = 3
+      Text = 'CalcEdit1'
+    end
+    object Label4: TLabel
+      Left = 168
+      Height = 15
+      Top = 63
+      Width = 30
+      Caption = 'Valor:'
+      ParentColor = False
+    end
+    object edtFiltro: TEdit
+      Left = 10
+      Height = 23
+      Top = 145
+      Width = 296
+      TabOrder = 4
+    end
+    object Button1: TButton
+      Left = 312
+      Height = 25
+      Top = 145
+      Width = 75
+      Caption = 'Filtrar'
+      OnClick = Button1Click
+      TabOrder = 5
+    end
+    object Label5: TLabel
+      Left = 10
+      Height = 15
+      Top = 128
+      Width = 30
+      Caption = 'Filtro:'
+      ParentColor = False
+    end
+    object Button3: TButton
+      Left = 328
+      Height = 25
+      Top = 85
+      Width = 75
+      Caption = 'Insert'
+      OnClick = Button3Click
+      TabOrder = 6
+    end
+  end
+  object btnFind: TButton
+    Left = 576
+    Height = 25
+    Top = 144
+    Width = 75
+    Caption = 'Find'
+    OnClick = btnFindClick
+    TabOrder = 2
+  end
+  object ZConnection1: TZConnection
+    ControlsCodePage = cCP_UTF8
+    AutoEncodeStrings = True
+    Properties.Strings = (
+      'AutoEncodeStrings=True'
+      'controls_cp=CP_UTF8'
+      'codepage='
+    )
+    HostName = 'localhost'
+    Port = 3308
+    Database = 'erp'
+    User = 'root'
+    Password = 'root'
+    Protocol = 'mysql'
+    Left = 541
+    Top = 91
+  end
+  object DataSource1: TDataSource
+    Left = 569
+    Top = 189
+  end
+end
